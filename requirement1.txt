@@ -1,0 +1,482 @@
+/generate a skills diagram how it works is that possible on which tech stack 
+
+From Upstream Application 
+      |
+Mid_Server details, Certificate details(Location, SAN, Thumbprint, Expires, etc)
+	|
+
+We have 100 certificates and 5 certificates are going to expires on 05/09/2026 (getting from Discovery example)
+
+at the same time we also get new certificates with Private key + CSR (getting from Issuing CA like Sectigo)
+
+	|
+
+Our should be able to access that location via mid server and deploy this new certificate private key + csr at that location 
+
+
+```python
+import os
+
+md_content = """# Certificate Lifecycle Management & Automated Deployment Engine
+## Proof of Concept (PoC) Requirements & Technical Specification Document
+
+---
+
+## 1. Executive Summary & Objective
+
+This document provides the complete technical specifications and operational requirements for building a **Proof of Concept (PoC)** for an automated **Certificate Lifecycle Management & Deployment Engine**.
+
+The objective of this project is to replace legacy/manual certificate management workflows with an automated, lightweight, Python-driven orchestration engine. The system will handle:
+1. Receiving certificate inventory & expiration triggers from an **Upstream Application**.
+2. Identifying expiring certificates (e.g., certificates expiring on or before `05/09/2026`).
+3. Generating CSRs & Private Keys dynamically and interacting with a **Sectigo Issuing CA Service** (Mocked).
+4. Automating the remote deployment and binding of the new Private Key + Certificate to the target server/endpoint via an **Ansible Automation Engine / MID Server**.
+5. Returning real-time deployment status back to the upstream client.
+
+---
+
+## 2. Architecture & Technology Stack
+
+### 2.1 Tech Stack Summary
+
+| Layer | Technology | Role / Purpose |
+| :--- | :--- | :--- |
+| **Orchestration Engine** | **Python 3.11+ / FastAPI** | Core REST API engine, workflow coordinator, CSR generator, and Ansible runner controller. |
+| **CA Service Simulator** | **Python / FastAPI + `cryptography`** | Simulates Sectigo Issuing CA REST API to generate signed X.509 certificates from incoming CSRs. |
+| **Upstream Simulator** | **Python Script / Postman / cURL** | Simulates upstream app pushing certificate inventory payloads. |
+| **Deployment Engine** | **Ansible Core (Python)** | Agentless deployment runner using SSH/WinRM to deploy keys/certs and execute service reloads. |
+| **Cryptographic Toolkit** | **Python `cryptography` library** | RSA key pair generation, CSR creation, X.509 certificate parsing. |
+| **Containerization** | **Docker & Docker Compose** | Microservice packaging for rapid local environment setup and PoC execution. |
+
+### 2.2 System Architecture Diagram (Textual Representation)
+
+```text
++-----------------------------------------------------------------------------------+
+|                                 DOCKER COMPOSE                                    |
+|                                                                                   |
+|  +-----------------------+                                                        |
+|  | (1) Upstream App      |                                                        |
+|  |     (Simulator Script)|                                                        |
+|  +-----------+-----------+                                                        |
+|              |                                                                    |
+|              | HTTP POST /api/v1/orchestrate/process-certificates                 |
+|              v                                                                    |
+|  +-----------------------------------------------------------------------------+  |
+|  | (2) Deployment Orchestration Engine (Python / FastAPI)                      |  |
+|  |                                                                             |  |
+|  |  * Evaluates certificate expiration dates (e.g., 05/09/2026)                |  |
+|  |  * Generates RSA 2048-bit Private Key & CSR                                |  |
+|  |  * Invokes Ansible Playbook via Python subprocess/Ansible Runner             |  |
+|  +-------+-------------------------------------------------------------+-------+  |
+|          |                                                             |          |
+|          | HTTP POST /api/v1/sectigo/issue-cert                        |          |
+|          v                                                             |          |
+|  +-----------------------+                                             |          |
+|  | (3) Sectigo CA Mock   |                                             |          |
+|  |     (Python/FastAPI)  |                                             |          |
+|  |   * Issues X.509 Cert |                                             |          |
+|  +-------+---------------+                                             |          |
+|          |                                                             |          |
+|          +-----------------------------+                               |          |
+|                                        | Returns Cert                      |          |
+|                                        v                               v          |
+|                              +------------------+             +----------------+  |
+|                              | Temporary In-    |             | (4) Ansible    |  |
+|                              | Memory Key Store |             |     Engine     |  |
+|                              +------------------+             +-------+--------+  |
+|                                                                       |           |
+|                                                                       | SSH/WinRM |
+|                                                                       v           |
+|                                                               +---------------+  |
+|                                                               | (5) Target    |  |
+|                                                               |     Endpoint  |  |
+|                                                               |  (Nginx/IIS)  |  |
+|                                                               +---------------+  |
++-----------------------------------------------------------------------------------+
+
+```
+
+---
+
+## 3. Component Details & Requirements
+
+### Component 1: Upstream Application Simulator
+
+* **Purpose:** Acts as the caller system that triggers the certificate management workflow.
+* **Requirements:**
+1. Sends a HTTP `POST` request containing a batch of certificate metadata (e.g., 100 certificates).
+2. Includes target host details, certificate SANs, location/file paths, current thumbprints, and expiration dates.
+3. Receives and displays execution response metrics (success/failure count per target).
+
+
+
+---
+
+### Component 2: Deployment Orchestration Engine (Core Python Service)
+
+* **Purpose:** Central coordinator driving logic, certificate requests, and deployment executions.
+* **Requirements:**
+1. **API Endpoint:** Exposes `POST /api/v1/orchestrate/process-certificates`.
+2. **Expiration Filter Logic:**
+* Parses incoming JSON payload.
+* Identifies certificates expiring on or before the target threshold date (e.g., `2026-09-05`).
+
+
+3. **CSR & Key Generation Module:**
+* Uses Python `cryptography.x509` to generate an RSA 2048-bit Private Key.
+* Constructs a CSR containing Subject Common Name (CN), SANs, Organization, and Country.
+
+
+4. **CA Integration Module:**
+* Calls Sectigo Mock API sending the generated CSR.
+* Retrieves the issued signed X.509 certificate.
+
+
+5. **Ansible Execution Trigger:**
+* Prepares temp directory with certificate `.crt`, private key `.key`, and inventory data.
+* Calls `ansible-playbook` via Python `subprocess` or `ansible-runner`.
+* Passes target host IP, deployment target path, web server reload command.
+
+
+6. **Response Aggregator:**
+* Collects deployment status from Ansible execution logs.
+* Returns structured JSON report back to Upstream App.
+
+
+
+
+
+---
+
+### Component 3: Sectigo CA Service Simulator (Mock API)
+
+* **Purpose:** Mocks the enterprise issuing CA (Sectigo REST API) without needing live external API keys.
+* **Requirements:**
+1. **API Endpoint:** Exposes `POST /api/v1/sectigo/issue-cert`.
+2. **Certificate Signing Logic:**
+* Accepts CSR payload.
+* Uses a self-signed Root CA key/cert inside the simulator to sign incoming CSRs.
+* Sets validity period (e.g., 365 days from current date).
+
+
+3. **Response Payload:** Returns the PEM-encoded signed X.509 Certificate and Intermediate CA Chain.
+
+
+
+---
+
+### Component 4: Ansible Execution Engine & Target Endpoint
+
+* **Purpose:** Handles actual file transfer, key binding, and service restart on the target server.
+* **Requirements:**
+1. **Ansible Playbook (`deploy_cert.yml`):**
+* Task 1: Ensure target directory exists (`/etc/ssl/certs/` or IIS certificate store).
+* Task 2: Copy Private Key with safe permissions (`0600`).
+* Task 3: Copy Certificate file (`0644`).
+* Task 4: Test web server configuration (e.g., `nginx -t`).
+* Task 5: Reload web server service (e.g., `systemctl reload nginx`).
+
+
+2. **Target Endpoint (Mock Container):**
+* Lightweight Linux container running SSHD and Nginx/Apache.
+
+
+
+
+
+---
+
+## 4. API Specification & Data Schemas
+
+### 4.1 Upstream Request Payload (`POST /api/v1/orchestrate/process-certificates`)
+
+```json
+{
+  "request_id": "REQ-20260804-001",
+  "certificates": [
+    {
+      "cert_id": "CERT-101",
+      "common_name": "app1.example.com",
+      "sans": ["app1.example.com", "api.app1.example.com"],
+      "thumbprint": "A1B2C3D4E5F678901234567890ABCDEF12345678",
+      "expiration_date": "2026-09-05",
+      "target_host": "172.20.0.10",
+      "target_type": "nginx",
+      "cert_dest_path": "/etc/ssl/certs/app1.crt",
+      "key_dest_path": "/etc/ssl/private/app1.key",
+      "reload_command": "nginx -s reload"
+    },
+    {
+      "cert_id": "CERT-102",
+      "common_name": "app2.example.com",
+      "sans": ["app2.example.com"],
+      "thumbprint": "B2C3D4E5F678901234567890ABCDEF123456789",
+      "expiration_date": "2027-01-15",
+      "target_host": "172.20.0.11",
+      "target_type": "nginx",
+      "cert_dest_path": "/etc/ssl/certs/app2.crt",
+      "key_dest_path": "/etc/ssl/private/app2.key",
+      "reload_command": "nginx -s reload"
+    }
+  ]
+}
+
+```
+
+### 4.2 Sectigo CA Request Payload (`POST /api/v1/sectigo/issue-cert`)
+
+```json
+{
+  "csr": "-----BEGIN CERTIFICATE REQUEST-----\\nMIICzjCC...\\n-----END CERTIFICATE REQUEST-----",
+  "validity_days": 365,
+  "profile_id": "SSL_ENTERPRISE_SECURE"
+}
+
+```
+
+### 4.3 Orchestrator Response Payload
+
+```json
+{
+  "request_id": "REQ-20260804-001",
+  "status": "COMPLETED",
+  "processed_count": 1,
+  "skipped_count": 1,
+  "results": [
+    {
+      "cert_id": "CERT-101",
+      "common_name": "app1.example.com",
+      "action": "RENEWED_AND_DEPLOYED",
+      "new_thumbprint": "F9E8D7C6B5A432109876543210FEDCBA98765432",
+      "ansible_status": "SUCCESS",
+      "deployment_timestamp": "2026-08-04T22:45:00Z"
+    },
+    {
+      "cert_id": "CERT-102",
+      "common_name": "app2.example.com",
+      "action": "SKIPPED_NOT_EXPIRING",
+      "ansible_status": "N/A"
+    }
+  ]
+}
+
+```
+
+---
+
+## 5. Project Directory Structure
+
+```text
+cert-automation-poc/
+├── docker-compose.yml
+├── orchestrator/
+│   ├── Dockerfile
+│   ├── main.py
+│   ├── requirements.txt
+│   ├── crypto_utils.py
+│   ├── ansible_runner.py
+│   └── playbooks/
+│       ├── deploy_cert.yml
+│       └── inventory.ini
+├── sectigo_mock/
+│   ├── Dockerfile
+│   ├── main.py
+│   ├── ca_signer.py
+│   └── requirements.txt
+├── upstream_mock/
+│   └── trigger_payload.py
+└── target_server/
+    ├── Dockerfile
+    └── entrypoint.sh
+
+```
+
+---
+
+## 6. Implementation Code Templates
+
+### 6.1 Certificate & CSR Generation (`orchestrator/crypto_utils.py`)
+
+```python
+from cryptography import x509
+from cryptography.hazmat.primitives import hashes, serialization
+from cryptography.hazmat.primitives.asymmetric import rsa
+from cryptography.x509.oid import NameOID
+
+def generate_key_and_csr(common_name: str, sans: list[str]):
+    # Generate RSA Private Key
+    private_key = rsa.generate_private_key(
+        public_exponent=65537,
+        key_size=2048
+    )
+    
+    # Build CSR
+    csr_builder = x509.CertificateSigningRequestBuilder().subject_name(
+        x509.Name([
+            x509.NameAttribute(NameOID.COMMON_NAME, common_name),
+            x509.NameAttribute(NameOID.ORGANIZATION_NAME, "PoC Enterprise"),
+        ])
+    )
+    
+    # Add SANs
+    san_list = [x509.DNSName(san) for san in sans]
+    csr_builder = csr_builder.add_extension(
+        x509.SubjectAlternativeName(san_list),
+        critical=False
+    )
+    
+    csr = csr_builder.sign(private_key, hashes.SHA256())
+    
+    key_pem = private_key.private_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PrivateFormat.PKCS8,
+        encryption_algorithm=serialization.NoEncryption()
+    ).decode('utf-8')
+    
+    csr_pem = csr.public_bytes(serialization.Encoding.PEM).decode('utf-8')
+    
+    return key_pem, csr_pem
+
+```
+
+### 6.2 Ansible Deployment Playbook (`orchestrator/playbooks/deploy_cert.yml`)
+
+```yaml
+---
+- name: Deploy Certificate and Private Key to Target Endpoint
+  hosts: all
+  gather_facts: no
+  vars:
+    cert_content: "{{ cert_data }}"
+    key_content: "{{ key_data }}"
+    cert_dest: "{{ cert_path }}"
+    key_dest: "{{ key_path }}"
+
+  tasks:
+    - name: Ensure target certificate directory exists
+      file:
+        path: "{{ cert_dest | dirname }}"
+        state: directory
+        mode: '0755'
+
+    - name: Write Private Key file
+      copy:
+        content: "{{ key_content }}"
+        dest: "{{ key_dest }}"
+        mode: '0600'
+
+    - name: Write Signed Certificate file
+      copy:
+        content: "{{ cert_content }}"
+        dest: "{{ cert_dest }}"
+        mode: '0644'
+
+    - name: Reload target web server
+      command: "{{ reload_cmd }}"
+      when: reload_cmd is defined and reload_cmd != ""
+
+```
+
+---
+
+## 7. PoC Execution & Verification Steps
+
+1. **Start Environment:**
+```bash
+docker-compose up --build -d
+
+```
+
+
+2. **Trigger Workflow from Upstream Mock:**
+```bash
+python upstream_mock/trigger_payload.py
+
+```
+
+
+3. **Verify Execution Logs:**
+* Check Orchestrator logs for CSR generation and Sectigo API call.
+* Check Ansible execution output confirming successful transport over SSH.
+* Verify file presence and permissions inside `target_server` container:
+```bash
+docker exec -it target_server ls -la /etc/ssl/certs/app1.crt
+docker exec -it target_server ls -la /etc/ssl/private/app1.key
+
+```
+
+
+
+
+
+---
+
+## 8. Conclusion
+
+This PoC requirements specification provides a fully standalone, lightweight, and database-free blueprint for building an automated certificate deployment pipeline using **Python**, **FastAPI**, and **Ansible**.
+"""
+
+with open("certificate_automation_poc_requirements.md", "w", encoding="utf-8") as f:
+f.write(md_content)
+
+print("File created successfully.")
+
+```
+
+```text?code_stdout&code_event_index=1
+File created successfully.
+
+
+```
+
+Your Markdown requirements document is ready:
+
+
+---
+
+### **Executive Overview of the Requirements Document**
+
+The generated file `certificate_automation_poc_requirements.md` provides a full technical specification for your engineering team to build the **Python + FastAPI + Ansible** Certificate Management & Deployment PoC.
+
+#### **Key Components Detailed in the Document:**
+
+1. **Upstream Application Simulator (`upstream_mock`):**
+* Sends the batch payload of 100 certificates (including MID Server execution target details, SANs, thumbprints, and expiration dates like `05/09/2026`).
+
+
+2. **Deployment Orchestration Engine (`orchestrator`):**
+* **Language/Framework:** Python 3.11+ / FastAPI.
+* **Expiration Filter:** Scans incoming payloads in-memory and isolates target certificates expiring on or before `05/09/2026`.
+* **CSR & Key Generator:** Uses `cryptography` to dynamically generate a 2048-bit RSA Private Key and matching CSR.
+* **Ansible Execution Module:** Invokes Ansible playbooks directly via Python to deploy the newly signed certificate and key.
+
+
+3. **Sectigo CA Service Simulator (`sectigo_mock`):**
+* **Language/Framework:** Python / FastAPI.
+* **Behavior:** Mocks the enterprise Sectigo REST API by taking the CSR, signing it with a local Root CA certificate, and returning a valid PEM-encoded X.509 certificate.
+
+
+4. **Deployment Runner & Target Endpoint (`ansible` / `target_server`):**
+* **Ansible Playbook (`deploy_cert.yml`):** Copies the private key (`0600` permissions) and certificate (`0644` permissions) to the destination path on the target server via SSH, then executes the web server reload command (e.g., `nginx -s reload`).
+
+
+
+---
+
+### **Quick File Structure Generated in Specs**
+
+```text
+cert-automation-poc/
+├── certificate_automation_poc_requirements.md
+├── docker-compose.yml
+├── orchestrator/
+│   ├── main.py (FastAPI Orchestrator API)
+│   ├── crypto_utils.py (CSR & Key generation)
+│   └── playbooks/
+│       └── deploy_cert.yml (Ansible Playbook)
+├── sectigo_mock/
+│   └── main.py (Mock Sectigo Signing API)
+└── upstream_mock/
+    └── trigger_payload.py (Simulator Script)
+
+```
