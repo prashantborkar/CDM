@@ -1,296 +1,454 @@
-# CDM: What You Need Ready, Step by Step
+# CDM: Build Your Own Test Environment, Step by Step (one person)
 
-Do the steps in order. In every step: do the small tasks, fill in the blanks, and check it works. When a step is done, send me the filled blanks.
+This guide is for one person working alone. No other team is needed. You will create every account and machine yourself, install the MID Server, and set up the test websites. Follow the steps in order. In each step: do the tasks, fill in the blanks, run the check.
 
-> **About passwords.** This file will be shared, so do not write passwords or keys in it. Where a step asks for a password, write only **where it is stored** (for example "my password manager" or the CyberArk object name). I will use that.
+> **About passwords.** Do not write passwords or keys in this file. Use a password manager. Where a step asks for a password, write only **where it is stored** (for example "password manager, entry ServiceNow admin").
+
+**What you will have at the end**
+
+```text
+ ServiceNow personal instance (cloud)          <- MID Server connects OUT to it
+                                                        |
+ AWS account
+   Windows machine (cdm-win-01)  = MID Server + IIS test website (+ Sectigo test service)
+   Linux machine   (cdm-lnx-01)  = Apache test website + Java (Tomcat) test app
+
+ The MID Server (on the Windows machine) will later deploy new certificates to IIS, Apache and Java.
+```
+
+**Cost and time.** The two AWS machines cost a small amount per hour while running (Windows costs more than Linux). Check the current prices on the AWS pricing page and set a budget alert (Step 3). **Stop the machines when you are not using them.** Plan about one working day for everything.
+
+**What you need before you start:** an email address, a mobile phone, a debit or credit card (for AWS), a computer with a browser and Git Bash, and a password manager.
 
 ---
 
 ## Step 1. ServiceNow personal instance
 
-**Goal:** an instance where we build and test CDM.
+**Goal:** the ServiceNow instance where we build CDM.
 
 **Do this**
 1. Go to developer.servicenow.com and sign in (or create a free account).
 2. Click **Request an Instance** and choose the newest release.
 3. Open the instance URL and log in as admin.
-4. Write down the instance URL, the admin user name and the release.
+4. Write down the URL, admin user name and release.
 5. Log in every few days so the instance stays active.
-
-**Fill in**
 
 | Item | Your value |
 |---|---|
 | Instance URL (for example https://dev12345.service-now.com) | |
 | Admin user name | |
 | Where the admin password is stored | |
-| Release (for example Xanadu) | |
+| Release | |
 
-**Check it works:** you can log in and see the home page.
+**Check:** you can log in and see the home page.
 
 ---
 
-## Step 2. Users for building and testing
+## Step 2. Users in ServiceNow
 
-**Goal:** a few users to build CDM and to test the roles.
+**Goal:** users for building, and to test the roles later.
 
 **Do this**
-1. In ServiceNow open **User Administration > Users** and create these users:
-   - a developer user (builds CDM),
-   - a test **owner** (owns certificates),
-   - a test **approver**,
-   - a test **auditor** (read only).
+1. Open **User Administration > Users** and create: a developer user, a test owner, a test approver, a test auditor.
 2. Give the developer user the admin role for now.
-3. Set a valid email on each user so notifications can be tested.
+3. Put an email address on each user.
 
-**Fill in**
+| User | User ID | Where the password is stored |
+|---|---|---|
+| Developer | | |
+| Test owner | | |
+| Test approver | | |
+| Test auditor | | |
 
-| User | User ID | Email | Where the password is stored |
-|---|---|---|---|
-| Developer | | | |
-| Test owner | | | |
-| Test approver | | | |
-| Test auditor | | | |
-
-**Check it works:** each user can log in.
+**Check:** each user can log in.
 
 ---
 
-## Step 3. MID Server on your laptop
+## Step 3. AWS account
 
-**Goal:** the agent that runs the deployment on the servers.
+**Goal:** an AWS account where you create the test machines.
 
 **Do this**
-1. In ServiceNow create a user for the MID Server and give it the **mid_server** role. (This is not a person.)
-2. In ServiceNow go to **MID Server > Downloads**, download the Windows 64-bit zip, and unzip it to a clean folder such as `C:\ServiceNow_MID`.
-3. Java 17 is already installed on the laptop from the earlier setup.
-4. Edit the MID `config.xml`: put in the instance URL, the MID user name and its password, and a MID name (for example `mid-lab-01`). The password stays only on the laptop, in that file.
-5. Start the MID Server service.
-6. In ServiceNow open **MID Server > Servers** and click **Validate**.
+1. Go to aws.amazon.com and click **Create an AWS account**. Enter email, account name, card and phone verification. Choose the basic (free) support plan.
+2. Sign in as the root user. Open **Security credentials** and turn on **MFA** for the root user (use an authenticator app).
+3. Open **IAM > Users > Create user**. Name it `admin-lab`, give it **AdministratorAccess**, and turn on MFA for it too. From now on sign in with this user, not root.
+4. Open **Billing > Budgets** and create a monthly cost budget with an email alert (for example a small amount you are comfortable with).
+5. Pick one **region** near you (top right corner of the console) and use only that region.
 
-**Fill in**
+| Item | Your value |
+|---|---|
+| AWS account ID | |
+| IAM user name | |
+| Where the password and MFA are stored | |
+| Region | |
+| Budget amount | |
+
+**Check:** you can sign in as `admin-lab` and see the EC2 page.
+
+---
+
+## Step 4. AWS network access and key
+
+**Goal:** the two machines can talk to each other, and only you can reach them from outside.
+
+**Do this**
+1. Open **EC2 > Key Pairs > Create key pair**. Name it `cdm-lab-key`, type **RSA**, format **.pem**. Save the downloaded file safely (you cannot download it again).
+2. Open **EC2 > Security Groups > Create security group**. Name it `cdm-lab-sg` and use the default network (VPC).
+3. Add these **inbound** rules:
+
+| Type | Port | Source |
+|---|---|---|
+| RDP | 3389 | **My IP** |
+| SSH | 22 | **My IP** |
+| All traffic | all | The same security group `cdm-lab-sg` (so the two machines can reach each other) |
+
+4. Never open RDP or SSH to "anywhere" (0.0.0.0/0).
+5. Leave outbound as it is (all allowed). The MID Server needs outbound HTTPS to ServiceNow.
+
+| Item | Your value |
+|---|---|
+| Key pair name and where the .pem file is kept | |
+| Security group name | |
+| My public IP (shown in the rule) | |
+
+**Check:** the security group shows the three inbound rules.
+
+---
+
+## Step 5. Windows machine (MID Server and IIS)
+
+**Goal:** a Windows server that will run the MID Server and the IIS test website.
+
+**Do this**
+1. Open **EC2 > Launch instance**.
+2. Name: `cdm-win-01`. Image: **Microsoft Windows Server 2022 Base**.
+3. Instance type: `t3.medium` (2 CPU, 4 GB). Storage: 40 GB.
+4. Key pair: `cdm-lab-key`. Security group: `cdm-lab-sg`.
+5. Launch. Wait until the status checks pass.
+6. Select the instance > **Connect > RDP client > Get password**. Upload the `.pem` file to decrypt the administrator password. Save that password in your password manager.
+7. Connect with Remote Desktop using the public IP, user `Administrator`.
+8. On the machine, open Windows Update and install updates when convenient.
+
+| Item | Your value |
+|---|---|
+| Instance name | cdm-win-01 |
+| Public IP (changes when stopped and started) | |
+| Private IP (stays the same) | |
+| Administrator password stored in | |
+
+**Check:** you are logged in to the Windows machine by Remote Desktop.
+
+---
+
+## Step 6. Linux machine (Apache and Java)
+
+**Goal:** a Linux server for the Apache website and the Java test app.
+
+**Do this**
+1. **EC2 > Launch instance**. Name: `cdm-lnx-01`. Image: **Amazon Linux 2023**.
+2. Instance type: `t3.small`. Storage: 20 GB.
+3. Key pair: `cdm-lab-key`. Security group: `cdm-lab-sg`.
+4. Launch and wait for the status checks.
+5. In Git Bash on your computer, connect:
+
+```bash
+chmod 400 /path/to/cdm-lab-key.pem
+ssh -i /path/to/cdm-lab-key.pem ec2-user@<public-ip-of-cdm-lnx-01>
+```
+
+| Item | Your value |
+|---|---|
+| Instance name | cdm-lnx-01 |
+| Public IP | |
+| Private IP | |
+
+**Check:** you get a shell prompt on the Linux machine.
+
+---
+
+## Step 7. MID Server on the Windows machine
+
+**Goal:** the agent that will do the deployments. It only connects out to ServiceNow.
+
+**Do this**
+1. In ServiceNow open **User Administration > Users**, create a user for the MID Server (for example `mid.lab`) and give it the role **mid_server**. This is not a person.
+2. On `cdm-win-01`, open a browser and log in to your ServiceNow instance. Go to **MID Server > Downloads** and download the Windows 64-bit zip.
+3. Unzip it to `C:\ServiceNow_MID`.
+4. The MID package usually contains the Java it needs. If the installer asks for Java, install Java 17.
+5. Edit `C:\ServiceNow_MID\agent\config.xml`: set the instance URL, the MID user name and password, and the MID name (for example `mid-lab-01`). The password stays only in this file on this machine.
+6. Start the MID Server (run the batch file or install and start the service, as the instructions in the download say).
+7. In ServiceNow open **MID Server > Servers** and click **Validate** for your MID.
 
 | Item | Your value |
 |---|---|
 | MID Server name | |
 | MID user name in ServiceNow | |
-| Folder where the MID is installed | |
-| Where the MID password is stored | |
+| Where the MID user password is stored | |
 
-**Check it works:** in **MID Server > Servers** the status is **Up** and **Validated**.
-
----
-
-## Step 4. Certificate records in ServiceNow
-
-**Goal:** confirm ServiceNow already holds the certificate data we match on.
-
-**Do this**
-1. Ask whoever runs Discovery which schedule scans certificates, and at what time each day.
-2. In the CMDB open the list of certificate records and open five of them.
-3. Check that each one shows: **name, thumbprint, serial, SAN, server, valid from, valid to, last scanned**.
-4. Export about 20 records to a file (certificate data only, nothing secret) and send it to me.
-5. If the personal instance has no Discovery data, say so. We will use a small scan simulator for the test.
-
-**Fill in**
-
-| Item | Your value |
-|---|---|
-| Name of the certificate list or table | |
-| Field name for thumbprint | |
-| Field name for serial | |
-| Field name for SAN | |
-| Field name for server | |
-| Field name for valid from / valid to | |
-| Field name for last scanned | |
-| Discovery scan time each day | |
-| Real Discovery or simulator (write one) | |
-
-**Check it works:** the five records show all the fields.
+**Check:** **MID Server > Servers** shows your MID as **Up** and **Validated**.
 
 ---
 
-## Step 5. Sectigo
+## Step 8. IIS test website with secure remote access
 
-**Goal:** CDM can read new certificates from Sectigo and get the certificate with its private key.
+**Goal:** an IIS website with an old test certificate, and remote management over HTTPS (WinRM), which is how the MID Server will deploy.
 
-**Do this**
-1. Ask your Sectigo administrator to create an **API account just for CDM** (not a personal account). It needs to: list certificates, download certificates, and download the certificate with its private key.
-2. Ask Sectigo (support or your account contact) to confirm **in writing**:
-   - the private key can be created together with the certificate and downloaded by API,
-   - which API call to use and in which format (usually a PKCS#12 file),
-   - how many times, and for how long, it can be downloaded,
-   - whether Sectigo keeps a copy of the key.
-3. Ask for a **test setup** (sandbox) or a few **test certificates** with a short validity.
-4. Ask how renewals reach the landing area today, and how many days before expiry the new certificate appears.
-5. Ask the administrator to store the API password in CyberArk (Step 6), not to send it to you.
+**Do this** on `cdm-win-01`, in PowerShell as Administrator.
 
-**Fill in**
+1. Install IIS:
+```powershell
+Install-WindowsFeature Web-Server -IncludeManagementTools
+```
+2. Create an old test certificate (valid 10 days) and bind it to the website:
+```powershell
+$cert = New-SelfSignedCertificate -DnsName "web01.lab.example.com" -CertStoreLocation Cert:\LocalMachine\My -NotAfter (Get-Date).AddDays(10)
+Import-Module WebAdministration
+New-WebBinding -Name "Default Web Site" -Protocol https -Port 443 -HostHeader "web01.lab.example.com" -SslFlags 1
+(Get-WebBinding -Name "Default Web Site" -Protocol https).AddSslCertificate($cert.Thumbprint, "My")
+$cert.Thumbprint
+```
+3. Turn on WinRM over HTTPS:
+```powershell
+$winrm = New-SelfSignedCertificate -DnsName $env:COMPUTERNAME -CertStoreLocation Cert:\LocalMachine\My
+New-Item -Path WSMan:\LocalHost\Listener -Transport HTTPS -Address * -CertificateThumbPrint $winrm.Thumbprint -Force
+New-NetFirewallRule -DisplayName "WinRM HTTPS" -Direction Inbound -Protocol TCP -LocalPort 5986 -Action Allow
+```
+4. Create the deployment user (lab only) and let it use remote management:
+```powershell
+net user cdmdeploy "<a-long-random-password>" /add
+net localgroup Administrators cdmdeploy /add
+New-ItemProperty -Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System -Name LocalAccountTokenFilterPolicy -Value 1 -PropertyType DWord -Force
+```
+Put that password in your password manager.
 
 | Item | Your value |
 |---|---|
-| Sectigo API address | |
-| Customer URI | |
-| Organisation or department | |
-| API account user name | |
-| Where the API password is stored | |
-| Certificate types or profiles we will use | |
-| Test setup available (yes or no) | |
-| Days before expiry the new certificate appears | |
-| Sectigo contact name and email | |
+| Website host name | web01.lab.example.com |
+| Website name | Default Web Site |
+| Old certificate thumbprint (printed above) | |
+| Deployment user ID | cdmdeploy |
+| Where its password is stored | |
 
-Write here what Sectigo answered about the private key (paste their reply):
+**Check:** in PowerShell, `Test-WSMan -ComputerName localhost -UseSSL -Port 5986` succeeds, and `Get-WebBinding -Protocol https` shows the binding.
+
+---
+
+## Step 9. Apache test website on Linux
+
+**Goal:** an Apache website with an old test certificate, and a deployment user.
+
+**Do this** on `cdm-lnx-01` (SSH session).
+
+1. Install Apache with HTTPS support:
+```bash
+sudo dnf install -y httpd mod_ssl
+sudo systemctl enable --now httpd
+```
+2. Create an old test certificate (valid 10 days):
+```bash
+sudo openssl req -x509 -newkey rsa:3072 -nodes -days 10 \
+  -keyout /etc/pki/tls/private/portal.key -out /etc/pki/tls/certs/portal.crt \
+  -subj "/CN=portal.lab.example.com" -addext "subjectAltName=DNS:portal.lab.example.com"
+sudo chmod 600 /etc/pki/tls/private/portal.key
+```
+3. Point Apache at it: open `/etc/httpd/conf.d/ssl.conf` and set `SSLCertificateFile /etc/pki/tls/certs/portal.crt` and `SSLCertificateKeyFile /etc/pki/tls/private/portal.key`. Then:
+```bash
+sudo apachectl configtest
+sudo systemctl reload httpd
+```
+4. On **your own computer** (Git Bash) create a key pair for the deployment user:
+```bash
+ssh-keygen -t ed25519 -f ~/cdm_deploy_key -N ""
+cat ~/cdm_deploy_key.pub
+```
+5. Back on the Linux machine, create the deployment user and add the public key you just printed:
+```bash
+sudo useradd -m cdmdeploy
+sudo mkdir -p /home/cdmdeploy/.ssh
+echo "<paste the public key line here>" | sudo tee /home/cdmdeploy/.ssh/authorized_keys
+sudo chown -R cdmdeploy:cdmdeploy /home/cdmdeploy/.ssh
+sudo chmod 700 /home/cdmdeploy/.ssh && sudo chmod 600 /home/cdmdeploy/.ssh/authorized_keys
+```
+6. Lab only: let the deployment user run commands as root (we will tighten this later with a wrapper script):
+```bash
+echo "cdmdeploy ALL=(root) NOPASSWD: ALL" | sudo tee /etc/sudoers.d/cdm
+```
+
+| Item | Your value |
+|---|---|
+| Website host name | portal.lab.example.com |
+| Certificate file | /etc/pki/tls/certs/portal.crt |
+| Private key file | /etc/pki/tls/private/portal.key |
+| Deployment user ID | cdmdeploy |
+| Where the private key file `cdm_deploy_key` is kept | |
+
+**Check:** `ssh -i ~/cdm_deploy_key cdmdeploy@<linux-private-or-public-ip> 'sudo apachectl configtest'` prints "Syntax OK".
+
+---
+
+## Step 10. Java test app on Linux
+
+**Goal:** a Java app (Tomcat) using a keystore with an old test certificate.
+
+**Do this** on `cdm-lnx-01`.
+
+1. Install Java and Tomcat:
+```bash
+sudo dnf install -y java-17-amazon-corretto-devel
+cd /tmp
+# download the latest Tomcat 9 tar.gz from tomcat.apache.org (Binary Distributions, Core, tar.gz), then:
+sudo mkdir -p /opt/tomcat && sudo tar xzf apache-tomcat-9.*.tar.gz -C /opt/tomcat --strip-components=1
+```
+2. Create the keystore with an old test certificate (valid 10 days). Choose a password and keep it in your password manager:
+```bash
+sudo /usr/lib/jvm/java-17-amazon-corretto/bin/keytool -genkeypair -alias api -keyalg RSA -keysize 3072 \
+  -storetype PKCS12 -keystore /opt/tomcat/conf/keystore.p12 -validity 10 \
+  -dname "CN=api.lab.example.com" -ext "san=dns:api.lab.example.com"
+```
+3. In `/opt/tomcat/conf/server.xml` add an HTTPS connector on port 8443:
+```xml
+<Connector port="8443" protocol="org.apache.coyote.http11.Http11NioProtocol" SSLEnabled="true">
+  <SSLHostConfig>
+    <Certificate certificateKeystoreFile="/opt/tomcat/conf/keystore.p12"
+                 certificateKeystorePassword="<keystore-password>" type="RSA"/>
+  </SSLHostConfig>
+</Connector>
+```
+4. Start Tomcat: `sudo /opt/tomcat/bin/startup.sh`
+
+| Item | Your value |
+|---|---|
+| Application name | api |
+| Website host name | api.lab.example.com |
+| Keystore file | /opt/tomcat/conf/keystore.p12 |
+| Keystore type | PKCS12 |
+| Alias | api |
+| Where the keystore password is stored | |
+| How to restart it | /opt/tomcat/bin/shutdown.sh then startup.sh |
+
+**Check:** `openssl s_client -connect localhost:8443 -servername api.lab.example.com </dev/null | openssl x509 -noout -dates` shows the dates of your test certificate.
+
+---
+
+## Step 11. Let the machines find each other by name
+
+**Goal:** the MID Server can reach the test sites using their names (no DNS needed).
+
+**Do this:** on `cdm-win-01`, open Notepad **as Administrator**, open `C:\Windows\System32\drivers\etc\hosts`, and add these lines (use your private IPs from Steps 5 and 6):
+
+```text
+<private-ip-of-cdm-win-01>  web01.lab.example.com
+<private-ip-of-cdm-lnx-01>  portal.lab.example.com
+<private-ip-of-cdm-lnx-01>  api.lab.example.com
+```
+
+Also check that the clock is correct on both machines (Windows: Settings > Time; Linux: `timedatectl`).
+
+**Check:** on `cdm-win-01`, in PowerShell: `Test-NetConnection portal.lab.example.com -Port 22` and `Test-NetConnection portal.lab.example.com -Port 443` succeed. (Port 443 on Linux is Apache; port 22 is SSH.)
+
+---
+
+## Step 12. Keep the passwords and keys in ServiceNow (temporary)
+
+**Goal:** CDM reads every password from a vault. For your test, use ServiceNow's own encrypted credential store. In production this is replaced by CyberArk, which a single person cannot set up alone.
+
+**Do this:** in ServiceNow open **Connections & Credentials > Credentials** and create:
+
+| Credential | Type | Contents |
+|---|---|---|
+| Windows deployment | Windows | user `cdmdeploy` and its password |
+| Linux deployment | SSH private key | user `cdmdeploy` and the private key `cdm_deploy_key` |
+| Java keystore | Basic auth | any user name and the keystore password |
+| Sectigo | Basic auth | API user and password (later, Step 14) |
+
+| Credential name in ServiceNow | Your value |
+|---|---|
+| Windows deployment | |
+| Linux deployment | |
+| Java keystore | |
+| Sectigo | |
+
+**Check:** the four credentials are listed.
+
+---
+
+## Step 13. Certificate records in ServiceNow
+
+**Goal:** confirm ServiceNow has the certificate data we match on (name, thumbprint, serial, SAN, server, dates).
+
+**Do this**
+1. In ServiceNow open the list of certificate records in the CMDB (the certificate table).
+2. If records exist, open five and check the fields above. Tell me the exact field names.
+3. If there are none (normal on a personal instance), that is fine. I will build a small **scan simulator** that reads the certificates from your test servers every day and creates or updates the records. You only need the test servers from Steps 8 to 10.
+
+| Item | Your value |
+|---|---|
+| Certificate records exist (yes or no) | |
+| Field names for thumbprint, serial, SAN, server, valid from, valid to, last scanned (if yes) | |
+
+---
+
+## Step 14. Sectigo
+
+**Goal:** a source of new certificates for CDM. Choose one path.
+
+**Path A: use my test service (start here; no account needed).**
+I will build a small test service that behaves like the Sectigo landing area: it lists new certificates and delivers the certificate together with its private key. It runs on `cdm-win-01`. You do nothing now.
+
+**Path B: a real Sectigo trial or sandbox.**
+1. Go to sectigo.com and ask for a trial or sandbox of **Sectigo Certificate Manager** (use the contact or sales form).
+2. Ask them, in writing:
+   - can the private key be created together with the certificate and downloaded by API?
+   - which API call, and in which format (usually PKCS#12)?
+   - how many downloads, for how long, and does Sectigo keep a copy of the key?
+   - can you get test certificates with a short validity?
+3. Create an API account for CDM in Sectigo and keep its password in your password manager.
+
+| Item | Your value |
+|---|---|
+| Path chosen (A or B) | |
+| Sectigo API address (if B) | |
+| Customer URI (if B) | |
+| API user name (if B) | |
+| Where the API password is stored (if B) | |
+
+Paste Sectigo's answer about the private key here (if B):
 
 > 
 
-**Check it works:** the API account can list certificates (your administrator runs a test call).
-
 ---
 
-## Step 6. CyberArk
+## Step 15. Decisions you make yourself
 
-**Goal:** CDM gets every password from CyberArk, only when needed.
+Since you are the only person, you decide. Suggested answers are filled in. Change them if you like.
 
-**Do this**
-1. Ask the CyberArk administrator for:
-   - an **application ID** for CDM (for example `CDM`), allowed only from the MID Server host,
-   - a **safe** for CDM with read-only access for that application,
-   - these **objects** in the safe: the Sectigo API account, the Windows deployment account, the Linux deployment account (SSH key), and the Java keystore passwords.
-2. Ask which way the MID Server will read them (the Central Credential Provider web address).
-3. Ask the administrator to run a **test read from the MID host** and show it in the CyberArk audit.
-4. If no CyberArk is available for the test, say so. We use a clearly marked temporary stand-in, removed before production.
-
-**Fill in**
-
-| Item | Your value |
-|---|---|
-| CyberArk web address for reading credentials | |
-| Application ID | |
-| Safe name | |
-| Object name: Sectigo API | |
-| Object name: Windows deployment account | |
-| Object name: Linux deployment account | |
-| Object name: Java keystore (per application) | |
-| CyberArk contact name and email | |
-
-**Check it works:** the MID host can read one object and it appears in the audit.
-
----
-
-## Step 7. Test servers
-
-**Goal:** three small servers to test on: IIS, Apache and Java.
-
-### 7a. Windows with IIS
-
-**Do this**
-1. Use a test Windows server (or the laptop). Turn on IIS.
-2. Create a site and add an **HTTPS binding** with an old test certificate.
-3. Turn on remote management over HTTPS (WinRM on port 5986).
-4. Create a deployment user with only the rights it needs (certificates, IIS bindings, private key permission, remote PowerShell). Store its password in CyberArk.
-
-| Item | Your value |
-|---|---|
-| Server name | |
-| Site name | |
-| Host name in the binding | |
-| Application pool user | |
-| Deployment user ID | |
-| Where its password is stored | |
-
-### 7b. Linux with Apache
-
-**Do this**
-1. Use a Linux test machine (a small virtual machine or WSL). Install Apache with an HTTPS site and an old test certificate.
-2. Create a deployment user that logs in by SSH key, not by password.
-3. Allow that user to run only the few commands the tool needs (I will give you the exact list).
-
-| Item | Your value |
-|---|---|
-| Server name | |
-| Linux version | |
-| Website name | |
-| Certificate file path | |
-| Private key file path | |
-| Chain file path | |
-| Deployment user ID | |
-| Where its SSH key is stored | |
-
-### 7c. Java application
-
-**Do this**
-1. Use a small Java app that uses a keystore file with an old test certificate.
-2. Put the keystore password in CyberArk.
-3. Find out how the app reloads the keystore, or how it is restarted.
-
-| Item | Your value |
-|---|---|
-| Application name | |
-| Server name | |
-| Keystore file path | |
-| Keystore type (JKS or PKCS12) | |
-| Alias | |
-| Where the keystore password is stored | |
-| How it reloads or restarts | |
-
-**Check it works:** you can open each test site or app over HTTPS, and it shows the old certificate.
-
----
-
-## Step 8. Network access
-
-**Goal:** the MID Server can reach everything it needs. All connections start from the MID Server going out.
-
-**Do this:** ask the network team to allow the MID Server host to reach:
-
-| # | To | Port |
+| Decision | Suggested | Your choice |
 |---|---|---|
-| 1 | The ServiceNow instance | 443 |
-| 2 | Sectigo | 443 |
-| 3 | CyberArk | 443 |
-| 4 | The Windows test server | 5986 |
-| 5 | The Linux test server | 22 |
-| 6 | The test websites and app (to check the certificate) | 443 or the app port |
-
-Also make sure the server names resolve from the MID host, and that the clocks on all machines are correct (time sync).
-
-**Fill in**
-
-| Item | Your value |
-|---|---|
-| Firewall request numbers | |
-| Proxy address (if any) | |
-
-**Check it works:** from the MID host, connection tests to each address and port succeed.
+| Start renewing when remaining life is at most | 30 days, or 33 percent of the lifetime if that is smaller (minimum 3 days) | |
+| Deploy as soon as the new certificate lands | No, wait for the renewal window | |
+| Approval needed before deploying (lab) | No | |
+| Time window for deploying | Any time in the lab | |
+| One certificate and key shared by servers of the same service | Yes | |
+| Alert if the next-day scan has not confirmed within | 36 hours | |
 
 ---
 
-## Step 9. Approvals
+## Step 16. Send me this
 
-**Goal:** the people who must agree have agreed, before we change any real server.
+When the steps are done, send me:
+1. All the filled tables (no passwords).
+2. The sample of certificate records, or a note that there are none (Step 13).
+3. Your answer for Step 14 (Path A or B).
 
-**Do this:** get a yes or no on each line.
-
-| Question | Answer |
-|---|---|
-| Security agrees that Sectigo creates the private key and the MID Server briefly holds it while installing it | |
-| Security agrees that one certificate and key may be shared by several servers of the same service | |
-| Change management agrees how automatic certificate changes are approved, and the time window for production | |
-| Someone is named to call if a deployment fails or a rollback fails | |
-
-**Fill in**
-
-| Item | Your value |
-|---|---|
-| Security approver | |
-| Change approver | |
-| Person to call when a deployment fails | |
-| Production change window | |
+Then I build, in this order: the ServiceNow application, the connection to the MID Server, the Sectigo (or test) connection, the matching, the three deployment methods (IIS, Apache, Java), and the check the next day.
 
 ---
 
-## When everything is filled in
+## When you are finished for the day
 
-Send me the filled steps. With that I can start building in this order: the ServiceNow application, the MID connection, the Sectigo connection, the matching, the three deployment methods (IIS, Apache, Java), and the check the next day.
+- **Stop** both EC2 machines (EC2 > select > Instance state > Stop). The public IPs will change when you start them again; the private IPs stay the same.
+- When the whole test is over, **terminate** the instances so you are not billed, and delete unused storage.
 
-**Later, for the licensed ServiceNow instance:** repeat Steps 1 to 3 for the development, test and production instances, and Step 8 for the real servers. Steps 4 to 7 are repeated for the real (pilot) servers.
+## Later, for the real (licensed) setup
+
+The real setup adds things one person cannot create alone: the company's Sectigo account, CyberArk, real servers and firewall rules. Those are listed in `CDM_Prerequisites_and_Readiness.md`. Everything you build here carries over: the same application, the same settings and the same deployment methods.
