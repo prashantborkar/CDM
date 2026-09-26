@@ -1,0 +1,11 @@
+# Generated/runtime state -- none of this is source. Regenerate with seed.py + the orchestrator.
+__pycache__/
+*.pyc
+vault_stub/store.json
+ca_simulator/state.json
+ca_simulator/private_*.json
+cmdb/*.json
+jobs/*.json
+jobs/JOB-*/
+logs/*.jsonl
+lab_site/certs/

@@ -1,0 +1,16 @@
+Resetting lab state...
+
+Seeding web01.lab.example.com (Windows target)...
+  old=SEC-0E300C05D3  new=SEC-3AD2013600
+  wrote lab_site/certs/win01.pem (+key) from SEC-0E300C05D3
+  also imported the old certificate into Cert:\CurrentUser\My
+
+Seeding api.lab.example.com (Java target)...
+  old=SEC-687F2817E5  new=SEC-548FA4A190
+  wrote lab_site/certs/api.pem (+key) from SEC-687F2817E5
+  wrote lab_site/certs/api-keystore.p12 (alias 'api')
+
+Done. Now, in separate terminals:
+  1) python lab_site/server.py
+  2) python ca_simulator/server.py
+  3) python orchestrator/run.py demo

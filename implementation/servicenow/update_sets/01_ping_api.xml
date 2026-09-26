@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<unload unload_date="2026-09-22 18:51:51">
+<sys_remote_update_set action="INSERT_OR_UPDATE">
+<application display_value="Certificate Deployment Manager">03bd97688327871024fcad30ceaad3db</application>
+<application_name>Certificate Deployment Manager</application_name>
+<application_scope>x_2182912_certif_0</application_scope>
+<application_version/>
+<description>Minimal Scripted REST API (GET /ping) to verify the unscoped-API restriction does not block a real Scripted REST endpoint.</description>
+<name>CDM 01 - Ping REST API (retry 2, sys_package added)</name>
+<origin_sys_id>27b61ec8f60c4496991faf66a88020d1</origin_sys_id>
+<release_date/>
+<remote_sys_id>27b61ec8f60c4496991faf66a88020d1</remote_sys_id>
+<state>loaded</state>
+<sys_class_name>sys_remote_update_set</sys_class_name>
+<sys_id>27b61ec8f60c4496991faf66a88020d1</sys_id>
+<sys_created_by>cdm.integration</sys_created_by>
+<sys_created_on>2026-09-22 18:51:51</sys_created_on>
+<sys_mod_count>0</sys_mod_count>
+<sys_updated_by>cdm.integration</sys_updated_by>
+<sys_updated_on>2026-09-22 18:51:51</sys_updated_on>
+</sys_remote_update_set>
+<sys_update_xml action="INSERT_OR_UPDATE">
+<name>sys_ws_definition_030a022882ee49c8b60911b244c08f92</name>
+<payload><![CDATA[<record_update table="sys_ws_definition"><sys_ws_definition action="INSERT_OR_UPDATE"><active>true</active><consumes>application/json</consumes><consumes_customized>false</consumes_customized><name>CDM</name><produces>application/json</produces><produces_customized>false</produces_customized><protection_policy>read_only</protection_policy><service_id>cdm</service_id><short_description>Certificate Deployment Manager REST API</short_description><sys_class_name>sys_ws_definition</sys_class_name><sys_id>030a022882ee49c8b60911b244c08f92</sys_id><sys_created_by>cdm.integration</sys_created_by><sys_created_on>2026-09-22 18:51:51</sys_created_on><sys_mod_count>0</sys_mod_count><sys_updated_by>cdm.integration</sys_updated_by><sys_updated_on>2026-09-22 18:51:51</sys_updated_on><sys_scope display_value="Certificate Deployment Manager">03bd97688327871024fcad30ceaad3db</sys_scope><sys_package display_value="Certificate Deployment Manager">03bd97688327871024fcad30ceaad3db</sys_package></sys_ws_definition></record_update>]]></payload>
+<remote_update_set display_value="Certificate Deployment Manager">27b61ec8f60c4496991faf66a88020d1</remote_update_set>
+<sys_id>2005a6ba986043fd936e518fa4e03709</sys_id>
+<target_name>CDM</target_name>
+<type>Scripted REST Service</type>
+<update_domain>global</update_domain>
+<update_set display_value="Certificate Deployment Manager">27b61ec8f60c4496991faf66a88020d1</update_set>
+<view/>
+</sys_update_xml>
+<sys_update_xml action="INSERT_OR_UPDATE">
+<name>sys_ws_operation_6df1919e42384f12a1e435a759fd106c</name>
+<payload><![CDATA[<record_update table="sys_ws_operation"><sys_ws_operation action="INSERT_OR_UPDATE"><active>true</active><consumes>application/json</consumes><consumes_customized>false</consumes_customized><http_method>GET</http_method><name>ping</name><operation_script>(function process(/*RESTAPIRequest*/ request, /*RESTAPIResponse*/ response) {
+    response.setStatus(200);
+    return {
+        status: &quot;ok&quot;,
+        message: &quot;CDM Scripted REST API is live&quot;,
+        time: new GlideDateTime().getDisplayValue()
+    };
+})(request, response);</operation_script><produces>application/json</produces><produces_customized>false</produces_customized><relative_path>/ping</relative_path><requires_authentication>true</requires_authentication><requires_snc_internal_role>false</requires_snc_internal_role><short_description>Health check</short_description><sys_class_name>sys_ws_operation</sys_class_name><sys_id>6df1919e42384f12a1e435a759fd106c</sys_id><web_service_definition>030a022882ee49c8b60911b244c08f92</web_service_definition><sys_created_by>cdm.integration</sys_created_by><sys_created_on>2026-09-22 18:51:51</sys_created_on><sys_mod_count>0</sys_mod_count><sys_updated_by>cdm.integration</sys_updated_by><sys_updated_on>2026-09-22 18:51:51</sys_updated_on><sys_scope display_value="Certificate Deployment Manager">03bd97688327871024fcad30ceaad3db</sys_scope><sys_package display_value="Certificate Deployment Manager">03bd97688327871024fcad30ceaad3db</sys_package></sys_ws_operation></record_update>]]></payload>
+<remote_update_set display_value="Certificate Deployment Manager">27b61ec8f60c4496991faf66a88020d1</remote_update_set>
+<sys_id>5b96cb6377344468a9ed790e4963fc5b</sys_id>
+<target_name>CDM/ping</target_name>
+<type>Scripted REST Resource</type>
+<update_domain>global</update_domain>
+<update_set display_value="Certificate Deployment Manager">27b61ec8f60c4496991faf66a88020d1</update_set>
+<view/>
+</sys_update_xml>
+</unload>

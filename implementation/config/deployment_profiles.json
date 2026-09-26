@@ -1,0 +1,101 @@
+{
+  "_comment": "One entry per binding. Mirrors spec section 7.8. Discovery never supplies these details, so they are configured here (and, in production, in ServiceNow DeploymentProfile records).",
+
+  "PRF-WIN-001": {
+    "version": 1,
+    "status": "approved",
+    "binding_id": "lab-win:web01.lab.example.com",
+    "server": "lab-win",
+    "zone": "lab",
+    "certificate_name": "web01.lab.example.com",
+    "san": ["web01.lab.example.com"],
+    "technology": "windows_cert_store",
+    "adapter": {"id": "windows-cert-store", "version": "1.0.0"},
+    "credential_alias": "vault:lab/windows_deploy",
+    "key_mode": "B",
+    "windows": {
+      "store": "CurrentUser/My",
+      "_note": "CurrentUser because this lab machine is not run as admin; production uses LocalMachine/My (AD-WIN-05).",
+      "served_cert_path": "lab_site/certs/win01.pem",
+      "served_key_path": "lab_site/certs/win01.key.pem"
+    },
+    "activation": {"method": "reload-lab-site"},
+    "verification": {"host": "127.0.0.1", "port": 8443, "sni": "web01.lab.example.com"},
+    "owner_group": "web-platform"
+  },
+
+  "PRF-LNX-001": {
+    "version": 1,
+    "status": "approved",
+    "binding_id": "lab-lnx:portal.lab.example.com",
+    "server": "lab-lnx",
+    "zone": "lab",
+    "certificate_name": "portal.lab.example.com",
+    "san": ["portal.lab.example.com"],
+    "technology": "linux_apache",
+    "adapter": {"id": "linux-apache", "version": "1.0.0"},
+    "credential_alias": "vault:lab/linux_deploy",
+    "key_mode": "B",
+    "linux": {
+      "cert_dir": "/etc/pki/tls/certs",
+      "key_dir": "/etc/pki/tls/private",
+      "link_names": {"cert": "portal.crt", "chain": "portal-chain.crt", "key": "portal.key"},
+      "owner": {"cert": "root:root 0644", "key": "root:root 0600"}
+    },
+    "activation": {"method": "graceful-reload", "command": "apachectl graceful"},
+    "verification": {"host": "portal.lab.example.com", "port": 443, "sni": "portal.lab.example.com"},
+    "owner_group": "web-platform",
+    "_status_note": "Written for the real Linux machine (AD-LNX-*). Not executable on this Windows laptop; run adapters/linux_apache/adapter.sh on the AWS Linux host once it exists."
+  },
+
+  "PRF-LNX-EC2": {
+    "version": 1,
+    "status": "approved",
+    "binding_id": "ec2-lnx:linuxtest.lab.example.com",
+    "server": "ec2-lnx",
+    "zone": "lab",
+    "certificate_name": "linuxtest.lab.example.com",
+    "san": ["linuxtest.lab.example.com"],
+    "technology": "linux_apache_ssh",
+    "adapter": {"id": "linux-apache", "version": "1.0.0"},
+    "credential_alias": "lab/ec2_linux_deploy",
+    "key_mode": "B",
+    "linux": {
+      "ssh_host": "16.16.120.70",
+      "remote_script": "/usr/local/sbin/cdm_linux_apache_adapter.sh",
+      "cert_dir": "/etc/ssl/certs", "key_dir": "/etc/ssl/private",
+      "link_names": {"cert": "linuxtest.crt", "chain": "linuxtest-chain.crt", "key": "linuxtest.key"},
+      "owner": {"cert": "root:root 0644", "key": "root:ssl-cert 0640"}
+    },
+    "activation": {"method": "graceful-reload", "command": "apachectl graceful"},
+    "verification": {"host": "127.0.0.1", "port": 443, "sni": "linuxtest.lab.example.com"},
+    "owner_group": "web-platform",
+    "_status_note": "REAL, TESTED: a genuine EC2 Ubuntu 26.04 host, real Apache, real SSH dispatch via adapters/linux_apache/ssh_executor.py. verification.host is 127.0.0.1 because adapter.sh's own verify step runs ON the target and probes itself; the orchestrator's local live-check (adapters/base.py probe_tls) is separate and uses the real public IP -- see discovery/discover.py's SITES entry for that one."
+  },
+
+  "PRF-JVA-001": {
+    "version": 1,
+    "status": "approved",
+    "binding_id": "lab-lnx:api.lab.example.com",
+    "server": "lab-lnx",
+    "zone": "lab",
+    "certificate_name": "api.lab.example.com",
+    "san": ["api.lab.example.com"],
+    "technology": "java_keystore",
+    "adapter": {"id": "java-keystore", "version": "1.0.0"},
+    "credential_alias": "vault:lab/java_keystore",
+    "key_mode": "B",
+    "java": {
+      "keystore_path": "lab_site/certs/api-keystore.p12",
+      "keystore_type": "PKCS12",
+      "alias": "api",
+      "alias_strategy": "replace",
+      "served_cert_path": "lab_site/certs/api.pem",
+      "served_key_path": "lab_site/certs/api.key.pem",
+      "_note": "served_cert_path/served_key_path feed lab_site's port 8445 the same way the windows profile does; a real Tomcat connector would read keystore_path directly and would not need these two files (see adapters/java_keystore/adapter.py docstring)."
+    },
+    "activation": {"method": "reload-lab-site"},
+    "verification": {"host": "127.0.0.1", "port": 8445, "sni": "api.lab.example.com"},
+    "owner_group": "java-platform"
+  }
+}

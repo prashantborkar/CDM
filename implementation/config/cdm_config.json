@@ -1,0 +1,71 @@
+{
+  "_comment": "Local lab configuration. Mirrors chapter 7 of CDM_End_to_End_Specification.md. Swap points for production are marked SWAP.",
+  "environment": "lab",
+  "timezone": "UTC",
+
+  "sources": {
+    "servicenow_cmdb": {
+      "_swap": "SWAP: replace cmdb/certificates.json reads with real ServiceNow CMDB API calls (FR-SYN-001).",
+      "path": "cmdb/certificates.json",
+      "stale_after_hours": 36
+    },
+    "sectigo": {
+      "_swap": "SWAP: change mode back to \"api\" and set base_url to the real Sectigo tenant, routing credentials through CyberArk (FR-SRC-012), once Sectigo access exists.",
+      "mode": "folder",
+      "folder_path": "input_sectigo_certificates",
+      "base_url": "http://127.0.0.1:8843",
+      "poll_overlap_minutes": 120,
+      "bundle_temp_ttl_minutes": 15,
+      "expected_downloads": 1
+    }
+  },
+
+  "vault": {
+    "_swap": "SWAP: replace vault_stub/ with real CyberArk CCP calls (FR-SEC-001). This stub exists only so the rest of the system can be built and tested against the same interface.",
+    "type": "local_stub",
+    "store_path": "vault_stub/store.json"
+  },
+
+  "zones": {
+    "lab": {
+      "mid_servers": ["local-lab-mid"],
+      "accounts": {
+        "windows_deploy": "vault:lab/windows_deploy",
+        "linux_deploy": "vault:lab/linux_deploy",
+        "java_keystore": "vault:lab/java_keystore"
+      }
+    }
+  },
+
+  "matching": {
+    "san_rule": "equal",
+    "require_unique": true,
+    "timestamp_skew_seconds": 120
+  },
+
+  "renewal": {
+    "window_max_days": 30,
+    "window_fraction_of_lifetime": 0.33,
+    "window_floor_days": 3,
+    "deploy_on_landing": true,
+    "_note": "deploy_on_landing is true in the lab so the demo does not have to wait for a real renewal window; set to false for production defaults (spec 7.4)."
+  },
+
+  "deployment": {
+    "require_profile": true,
+    "max_parallel_per_zone": 5,
+    "canary_first": true,
+    "stop_on_first_failure": true,
+    "retry": {"attempts": 3, "backoff_seconds": [5, 15, 30]}
+  },
+
+  "verification": {
+    "confirm_by_discovery": true,
+    "confirm_timeout_hours": 36
+  },
+
+  "retention": {
+    "old_certificate_on_server_days": 30,
+    "audit_online_months": 13
+  }
+}
