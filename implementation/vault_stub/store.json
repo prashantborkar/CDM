@@ -1,0 +1,30 @@
+{
+  "lab/windows_deploy": {
+    "username": "cdmdeploy",
+    "secret": "lab-only-not-a-real-secret"
+  },
+  "lab/linux_deploy": {
+    "username": "cdmdeploy",
+    "secret": "lab-only-ssh-key-placeholder"
+  },
+  "lab/java_keystore": {
+    "username": "keystore",
+    "secret": "lab-only-not-a-real-secret"
+  },
+  "sectigo/api": {
+    "username": "cdm-api",
+    "secret": "lab-only-not-a-real-secret"
+  },
+  "servicenow/admin": {
+    "username": "admin",
+    "secret": "Password@2026"
+  },
+  "lab/ec2_linux_deploy": {
+    "username": "ubuntu",
+    "secret": "C:\\Users\\riyaa\\Downloads\\linux-test-keyP.pem"
+  },
+  "servicenow/cdm_integration": {
+    "username": "cdm.integration",
+    "secret": "Password@2026"
+  }
+}

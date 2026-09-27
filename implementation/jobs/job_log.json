@@ -1,0 +1,40 @@
+[
+  {
+    "job_id": "JOB-E132C831E7",
+    "binding_id": "lab-win:web01.lab.example.com",
+    "started": "2026-09-26T16:41:30+00:00",
+    "status": "Deployed, awaiting scan",
+    "ended": "2026-09-26T16:41:35+00:00",
+    "evidence": {
+      "presented": {
+        "thumbprint": "02B5A75F5B9CEC960B4AC0DD9D442D255B8CA05C012158C169061DD03E9099EF",
+        "serial": "145CB1D071DDD2DAF35B501563D9142EFB91FF72",
+        "common_name": "web01.lab.example.com",
+        "san": [
+          "web01.lab.example.com"
+        ],
+        "not_before": "2026-09-26T16:40:53+00:00",
+        "not_after": "2027-09-26T16:40:53+00:00"
+      }
+    }
+  },
+  {
+    "job_id": "JOB-CFFAFF9DE2",
+    "binding_id": "ec2-lnx:linuxtest.lab.example.com",
+    "started": "2026-09-26T17:58:14+00:00",
+    "status": "Rolled back",
+    "ended": "2026-09-26T17:58:28+00:00",
+    "error": "activate failed: Could not parse remote adapter output: Invoking 'systemctl reload apache2'.\nUse 'systemctl status apache2' for more info.\n{\n  \"job_id\": \"JOB-CFFAFF9DE2\",\n  \"status\": \"success\",\n  \"error_code\": null,\n  \"evidence\": {\n    \"method\": \"graceful-reload\"\n  },\n  \"cleanup\": {}\n}\n",
+    "rollback_verified": false
+  },
+  {
+    "job_id": "JOB-40EDA125D9",
+    "binding_id": "ec2-lnx:linuxtest.lab.example.com",
+    "started": "2026-09-26T17:59:50+00:00",
+    "status": "Deployed, awaiting scan",
+    "ended": "2026-09-26T18:00:01+00:00",
+    "evidence": {
+      "presented_thumbprint": "154E7EB837D0C50FA61B2A5FA1411E2752A3232D3749419C28FE64FB24AB96C8"
+    }
+  }
+]

@@ -1,0 +1,69 @@
+{
+  "certificates": {
+    "SEC-0E300C05D3": {
+      "id": "SEC-0E300C05D3",
+      "common_name": "web01.lab.example.com",
+      "san": [
+        "web01.lab.example.com"
+      ],
+      "serial": "3783D2F0AEA76C4AEA23F1A27E00CA9130B65F90",
+      "thumbprint": "E8B6EED1C40D00A3C5CF8E493F8BA4658E5700BF2C2FB40B45F3DEC07DF4DE41",
+      "valid_from": "2026-09-21T17:08:55+00:00",
+      "valid_to": "2026-09-24T17:08:55+00:00",
+      "status": "issued",
+      "profile": "lab-default",
+      "issued_at": "2026-09-23T17:08:55+00:00",
+      "_role": "old"
+    },
+    "SEC-3AD2013600": {
+      "id": "SEC-3AD2013600",
+      "common_name": "web01.lab.example.com",
+      "san": [
+        "web01.lab.example.com"
+      ],
+      "serial": "597EF9B35FC062981851FB754872AB2FE73CE1C6",
+      "thumbprint": "0E1B25AC32325744CC12DA1A6BEE3863110A4756BEFDAB5562939725D197DDD7",
+      "valid_from": "2026-09-23T17:08:56+00:00",
+      "valid_to": "2027-09-23T17:08:56+00:00",
+      "status": "issued",
+      "profile": "lab-default",
+      "issued_at": "2026-09-23T17:08:56+00:00",
+      "_role": "new",
+      "_replaces": "SEC-0E300C05D3"
+    },
+    "SEC-687F2817E5": {
+      "id": "SEC-687F2817E5",
+      "common_name": "api.lab.example.com",
+      "san": [
+        "api.lab.example.com"
+      ],
+      "serial": "5D01C013EA40E656D7671571AF9EDD9E9FA7CA90",
+      "thumbprint": "CAD922D56D4A82378FC5604A30E13AD557A456CAF196677D8F7EF3DB607D3BE5",
+      "valid_from": "2026-09-21T17:08:58+00:00",
+      "valid_to": "2026-09-24T17:08:58+00:00",
+      "status": "issued",
+      "profile": "lab-default",
+      "issued_at": "2026-09-23T17:08:58+00:00",
+      "_role": "old"
+    },
+    "SEC-548FA4A190": {
+      "id": "SEC-548FA4A190",
+      "common_name": "api.lab.example.com",
+      "san": [
+        "api.lab.example.com"
+      ],
+      "serial": "76B4404CA6CFF10807D6DD280D94B4780238F21A",
+      "thumbprint": "17CBAB5A7F581270E269D4A34F1154C84B0E966AFFCC4271F74E5D294BFD7096",
+      "valid_from": "2026-09-23T17:08:58+00:00",
+      "valid_to": "2027-09-23T17:08:58+00:00",
+      "status": "issued",
+      "profile": "lab-default",
+      "issued_at": "2026-09-23T17:08:58+00:00",
+      "_role": "new",
+      "_replaces": "SEC-687F2817E5"
+    }
+  },
+  "downloads": {
+    "SEC-3AD2013600": 1
+  }
+}

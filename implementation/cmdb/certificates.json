@@ -1,0 +1,50 @@
+{
+  "lab-win:web01.lab.example.com": {
+    "binding_id": "lab-win:web01.lab.example.com",
+    "server": "lab-win",
+    "certificate_name": "web01.lab.example.com",
+    "thumbprint": "F8387B26BE8018F1270441633393B474BC9F0F9A1652AC66100B581D5FDF1390",
+    "serial": "729886F94ECCDB96C8A3FC0F2AE3886E079D3FDC",
+    "san": [
+      "web01.lab.example.com"
+    ],
+    "valid_from": "2026-09-26T17:41:28+00:00",
+    "valid_to": "2027-09-26T17:41:28+00:00",
+    "last_scanned": "2026-09-26T18:00:12+00:00",
+    "state": "Confirmed by discovery",
+    "deployed_new_thumbprint": "F8387B26BE8018F1270441633393B474BC9F0F9A1652AC66100B581D5FDF1390",
+    "deployed_at": "2026-09-26T17:42:57+00:00",
+    "confirmed_at": "2026-09-26T17:43:19+00:00"
+  },
+  "lab-lnx:api.lab.example.com": {
+    "binding_id": "lab-lnx:api.lab.example.com",
+    "server": "lab-lnx",
+    "certificate_name": "api.lab.example.com",
+    "thumbprint": "967AD04893D2A872F5127A4AD589D05CA032000643E5377B312041B143A1C033",
+    "serial": "4FACF0599110E0973B69272F45675F31B2062B71",
+    "san": [
+      "api.lab.example.com"
+    ],
+    "valid_from": "2026-09-26T17:18:42+00:00",
+    "valid_to": "2026-09-29T17:18:42+00:00",
+    "last_scanned": "2026-09-26T18:00:12+00:00",
+    "state": "Discovered"
+  },
+  "ec2-lnx:linuxtest.lab.example.com": {
+    "binding_id": "ec2-lnx:linuxtest.lab.example.com",
+    "server": "ec2-lnx",
+    "certificate_name": "linuxtest.lab.example.com",
+    "thumbprint": "154E7EB837D0C50FA61B2A5FA1411E2752A3232D3749419C28FE64FB24AB96C8",
+    "serial": "67E7B29EB3A88BBF7039AB8B43DE228085DFD613",
+    "san": [
+      "linuxtest.lab.example.com"
+    ],
+    "valid_from": "2026-09-26T17:50:45+00:00",
+    "valid_to": "2027-09-26T17:50:45+00:00",
+    "last_scanned": "2026-09-26T18:00:13+00:00",
+    "state": "Confirmed by discovery",
+    "deployed_new_thumbprint": "154E7EB837D0C50FA61B2A5FA1411E2752A3232D3749419C28FE64FB24AB96C8",
+    "deployed_at": "2026-09-26T18:00:01+00:00",
+    "confirmed_at": "2026-09-26T18:00:13+00:00"
+  }
+}
