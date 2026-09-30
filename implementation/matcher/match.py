@@ -25,6 +25,9 @@ def fetch_ca_list():
         from sources.folder_ca import list_certificates
         root = Path(__file__).resolve().parents[1]
         certs = list_certificates(root / sectigo_cfg.get("folder_path", "input_sectigo_certificates"))
+    elif sectigo_cfg.get("mode") == "acme":
+        from sources.acme_ca import list_certificates
+        certs = list_certificates(sectigo_cfg.get("acme_domains", []))
     else:
         base = sectigo_cfg["base_url"]
         with urllib.request.urlopen(f"{base}/api/ssl/v1", timeout=10) as resp:

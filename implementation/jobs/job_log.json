@@ -36,5 +36,25 @@
     "evidence": {
       "presented_thumbprint": "154E7EB837D0C50FA61B2A5FA1411E2752A3232D3749419C28FE64FB24AB96C8"
     }
+  },
+  {
+    "job_id": "JOB-F23C49FD9D",
+    "binding_id": "ec2-lnx:16-16-120-70.nip.io",
+    "started": "2026-09-30T17:51:57+00:00",
+    "status": "Deployed, awaiting scan",
+    "ended": "2026-09-30T17:52:08+00:00",
+    "evidence": {
+      "presented_thumbprint": "9496753CF1DDA85CA4194A25F55FFDB4777BBBAF23FA58A88621DA6B93D54516"
+    }
+  },
+  {
+    "job_id": "JOB-25F5DFB29D",
+    "binding_id": "ec2-lnx:16-16-120-70.nip.io",
+    "started": "2026-09-30T18:06:34+00:00",
+    "status": "Deployed, awaiting scan",
+    "ended": "2026-09-30T18:06:45+00:00",
+    "evidence": {
+      "presented_thumbprint": "FB3465E1A6E101B4D9250250B86FA4A5931CE504ED00117619BD2D7EA94282B4"
+    }
   }
 ]

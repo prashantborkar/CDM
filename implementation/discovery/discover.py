@@ -1,42 +1,35 @@
-"""DISCOVERY SIMULATOR -- stands in for ServiceNow Discovery + the certificate CIs in the CMDB
-(spec section 14.2, PRE-SN-07/T2 in the readiness documents). Your answer to the prerequisite
-questions was that Discovery already stores thumbprint, serial, SAN, server and exact dates, and
-scans daily -- so this simulator produces exactly that shape of record (Appendix E of the
-specification) by really connecting to the lab sites and reading what they present, the same way a
-network-based certificate scan would.
+"""DISCOVERY -- stands in for ServiceNow Discovery's certificate scan (spec section 14.2). Reads
+the list of servers to scan live from ServiceNow (u_x_2182912_certif_0_monitored_site, via
+common/sn_config.py), then really connects to each one and reads what certificate it presents,
+the same way a network-based certificate scan would.
 
-SWAP TO PRODUCTION: replace SITES below (and this whole module) with real reads of the ServiceNow
-CMDB certificate table (FR-SYN-001). Everything downstream (matcher, orchestrator) only ever reads
-cmdb/certificates.json, so that is the one file format that has to be matched by the real CMDB
-export/API mapping (see CDM_Prerequisites_and_Readiness.md template T2).
+The list of servers to scan is no longer hardcoded here -- it used to be a fixed SITES list in
+this file; that has been replaced by a live ServiceNow table so adding/removing a monitored
+server is a ServiceNow record, not a code change on this machine (see
+servicenow/setup_dynamic_config_tables.py and servicenow/migrate_config_to_sn.py for how that
+table was created and seeded).
+
+What's still local: cmdb/certificates.json, the CURRENT SCAN RESULTS (thumbprint, SAN, validity
+of what each server is presenting right now). That's runtime state, re-read from the network
+every scan -- not configuration -- and it's pushed into ServiceNow's own certificate table by
+servicenow/sync_cmdb_to_sn.py.
 """
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from common.util import load_json, save_json, audit, utcnow, CMDB_DIR  # noqa: E402
+from common.sn_config import get_monitored_sites  # noqa: E402
 from adapters.base import probe_tls  # noqa: E402
 
 CERT_TABLE = CMDB_DIR / "certificates.json"
 
-# The servers Discovery would already know about via CMDB relationships (spec FR-SN-06). This
-# stands in for "Discovery already found these servers"; it does not stand in for the deployment
-# details (site name, keystore path, etc.), which never come from Discovery -- those come from the
-# deployment profile (config/deployment_profiles.json), exactly as the specification says.
-SITES = [
-    {"binding_id": "lab-win:web01.lab.example.com", "server": "lab-win",
-     "host": "127.0.0.1", "port": 8443, "sni": "web01.lab.example.com"},
-    {"binding_id": "lab-lnx:api.lab.example.com", "server": "lab-lnx",
-     "host": "127.0.0.1", "port": 8445, "sni": "api.lab.example.com"},
-    {"binding_id": "ec2-lnx:linuxtest.lab.example.com", "server": "ec2-lnx",
-     "host": "16.16.120.70", "port": 443, "sni": "linuxtest.lab.example.com"},
-]
-
 
 def scan_all():
+    sites = get_monitored_sites()
     table = load_json(CERT_TABLE, {})
     scanned = 0
-    for site in SITES:
+    for site in sites:
         try:
             presented = probe_tls(site["host"], site["port"], site["sni"])
         except (ConnectionRefusedError, OSError, TimeoutError) as exc:
@@ -58,7 +51,7 @@ def scan_all():
         table[site["binding_id"]] = record
         scanned += 1
     save_json(CERT_TABLE, table)
-    audit("discovery.scan.complete", scanned=scanned, total=len(SITES))
+    audit("discovery.scan.complete", scanned=scanned, total=len(sites))
     return table
 
 

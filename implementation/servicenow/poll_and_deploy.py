@@ -29,13 +29,13 @@ import os
 os.environ["PATH"] = os.environ.get("PATH", "") + r";C:\Program Files\Microsoft\jdk-17.0.19.10-hotspot\bin"
 
 from common.util import load_json, load_config, audit, utcnow  # noqa: E402
+from common.sn_config import profiles_by_binding as _sn_profiles_by_binding  # noqa: E402
 from servicenow.sn_client import ServiceNowClient  # noqa: E402
 from servicenow.sync_cmdb_to_sn import to_sn_datetime  # noqa: E402
 
 TABLE = "u_x_2182912_certif_0_certificate"
 REQUEST_STATE = "Deploy Requested"
 
-PROFILES_PATH = ROOT / "config" / "deployment_profiles.json"
 ADAPTER_MODULES = {
     "windows_cert_store": "adapters.windows_cert_store.adapter",
     "java_keystore": "adapters.java_keystore.adapter",
@@ -44,8 +44,8 @@ ADAPTER_MODULES = {
 
 
 def profiles_by_binding():
-    profiles = load_json(PROFILES_PATH, {})
-    return {p["binding_id"]: {**p, "_profile_id": pid} for pid, p in profiles.items() if "binding_id" in p}
+    """Live from ServiceNow now -- see common/sn_config.py. No local deployment_profiles.json read."""
+    return _sn_profiles_by_binding()
 
 
 def local_match_for(binding_id):

@@ -22,10 +22,10 @@ import os
 os.environ["PATH"] = os.environ.get("PATH", "") + r";C:\Program Files\Microsoft\jdk-17.0.19.10-hotspot\bin"
 
 from common.util import load_json, save_json, audit, utcnow, parse_ts, load_config, CMDB_DIR  # noqa: E402
+from common.sn_config import profiles_by_binding as _sn_profiles_by_binding  # noqa: E402
 from discovery.discover import scan_all  # noqa: E402
 from matcher.match import match_all  # noqa: E402
 
-PROFILES_PATH = ROOT / "config" / "deployment_profiles.json"
 STATE_PATH = CMDB_DIR / "certificates.json"
 ADAPTER_MODULES = {
     "windows_cert_store": "adapters.windows_cert_store.adapter",
@@ -35,8 +35,8 @@ ADAPTER_MODULES = {
 
 
 def _profiles_by_binding():
-    profiles = load_json(PROFILES_PATH, {})
-    return {p["binding_id"]: {**p, "_profile_id": pid} for pid, p in profiles.items() if "binding_id" in p}
+    """Live from ServiceNow now -- see common/sn_config.py. No local deployment_profiles.json read."""
+    return _sn_profiles_by_binding()
 
 
 def _run_adapter(technology, operation, request):

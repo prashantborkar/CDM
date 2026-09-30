@@ -1,36 +1,17 @@
 [
   {
-    "id": "linuxtest_renewal",
-    "common_name": "linuxtest.lab.example.com",
+    "id": "16-16-120-70.nip.io",
+    "common_name": "16-16-120-70.nip.io",
     "san": [
-      "linuxtest.lab.example.com"
+      "16-16-120-70.nip.io"
     ],
-    "serial": "67E7B29EB3A88BBF7039AB8B43DE228085DFD613",
-    "thumbprint": "154E7EB837D0C50FA61B2A5FA1411E2752A3232D3749419C28FE64FB24AB96C8",
-    "valid_from": "2026-09-26T17:50:45+00:00",
-    "valid_to": "2027-09-26T17:50:45+00:00",
+    "serial": "2C67FB4E26920C065BE31AE50A3E7A8ADD79",
+    "thumbprint": "FB3465E1A6E101B4D9250250B86FA4A5931CE504ED00117619BD2D7EA94282B4",
+    "valid_from": "2026-09-30T17:07:59+00:00",
+    "valid_to": "2026-12-29T17:07:58+00:00",
     "status": "issued",
-    "profile": "folder-input",
-    "issued_at": "2026-09-26T17:50:45+00:00",
-    "_source": "folder",
-    "_cert_path": "C:\\Users\\riyaa\\Downloads\\POC\\implementation\\input_sectigo_certificates\\linuxtest_renewal.crt",
-    "_key_path": "C:\\Users\\riyaa\\Downloads\\POC\\implementation\\input_sectigo_certificates\\linuxtest_renewal.key"
-  },
-  {
-    "id": "web01_renewal",
-    "common_name": "web01.lab.example.com",
-    "san": [
-      "web01.lab.example.com"
-    ],
-    "serial": "729886F94ECCDB96C8A3FC0F2AE3886E079D3FDC",
-    "thumbprint": "F8387B26BE8018F1270441633393B474BC9F0F9A1652AC66100B581D5FDF1390",
-    "valid_from": "2026-09-26T17:41:28+00:00",
-    "valid_to": "2027-09-26T17:41:28+00:00",
-    "status": "issued",
-    "profile": "folder-input",
-    "issued_at": "2026-09-26T17:41:28+00:00",
-    "_source": "folder",
-    "_cert_path": "C:\\Users\\riyaa\\Downloads\\POC\\implementation\\input_sectigo_certificates\\web01_renewal.crt",
-    "_key_path": "C:\\Users\\riyaa\\Downloads\\POC\\implementation\\input_sectigo_certificates\\web01_renewal.key"
+    "profile": "acme",
+    "issued_at": "2026-09-30T17:07:59+00:00",
+    "_source": "acme"
   }
 ]

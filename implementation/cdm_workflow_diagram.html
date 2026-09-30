@@ -1,0 +1,227 @@
+<title>CDM Agent Loop</title>
+<link rel="preconnect" href="https://fonts.gstatic.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+  :root {
+    --bg: #F6F7FA;
+    --surface: #FFFFFF;
+    --ink: #17212B;
+    --muted: #5B6672;
+    --line: #C7CED8;
+    --accent: #2454A6;
+    --accent-soft: #E4ECF9;
+    --good: #1F8A4C;
+    --good-soft: #E4F3EA;
+    --warn: #B7791F;
+    --warn-soft: #FBF0DD;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #12161C;
+      --surface: #1A2029;
+      --ink: #E8ECF1;
+      --muted: #93A0AF;
+      --line: #3A4452;
+      --accent: #6FA1E8;
+      --accent-soft: #223350;
+      --good: #6FCB93;
+      --good-soft: #1B3327;
+      --warn: #E3AE58;
+      --warn-soft: #3A2E15;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #12161C;
+    --surface: #1A2029;
+    --ink: #E8ECF1;
+    --muted: #93A0AF;
+    --line: #3A4452;
+    --accent: #6FA1E8;
+    --accent-soft: #223350;
+    --good: #6FCB93;
+    --good-soft: #1B3327;
+    --warn: #E3AE58;
+    --warn-soft: #3A2E15;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+    padding-inline: 20px;
+    padding-block: 28px 40px;
+  }
+  .wrap { max-width: 1180px; margin: 0 auto; }
+
+  header { text-align: center; margin-bottom: 6px; }
+  h1 {
+    font-size: clamp(24px, 4vw, 34px);
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    margin: 0 0 8px;
+    text-wrap: balance;
+  }
+  .kicker {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 500;
+  }
+  .sub {
+    color: var(--muted);
+    font-size: 15px;
+    max-width: 640px;
+    margin: 10px auto 0;
+    line-height: 1.5;
+  }
+
+  figure { margin: 28px 0 0; }
+  .diagram-card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 18px clamp(10px, 3vw, 28px);
+  }
+  svg { display: block; width: 100%; height: auto; max-width: 100%; }
+
+  figcaption {
+    color: var(--muted);
+    font-size: 13.5px;
+    line-height: 1.6;
+    max-width: 780px;
+    margin: 16px auto 0;
+    text-align: center;
+  }
+  figcaption b { color: var(--ink); font-weight: 600; }
+
+  .proof {
+    margin: 30px auto 0;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+  }
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: var(--good-soft);
+    color: var(--good);
+    border: 1px solid color-mix(in srgb, var(--good) 35%, transparent);
+    font-size: 12.5px;
+    font-weight: 600;
+    padding: 7px 13px;
+    border-radius: 999px;
+  }
+  .pill svg { width: 13px; height: 13px; display: inline; }
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="kicker">Certificate Deployment Manager</div>
+    <h1>The AI agent that keeps certificates from expiring</h1>
+    <p class="sub">One picture of the whole loop: two systems that each know half the story, an AI agent that
+      decides what to do about it, and independent proof that it actually worked.</p>
+  </header>
+
+  <figure>
+    <div class="diagram-card">
+      <svg viewBox="0 0 1100 660" role="img"
+           aria-label="ServiceNow and the certificate source both feed the AI Agent. The agent decides: if a match is unique and an approved plan exists, it deploys to the real server, verifies the live result, and automatically rolls back on any mismatch. If the match is ambiguous or unapproved, it notifies a person instead of guessing. A successful deployment is independently confirmed by ServiceNow's own next scan, closing the loop back to the start.">
+
+        <defs>
+          <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="currentColor" />
+          </marker>
+          <marker id="arrowGood" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="#1F8A4C" />
+          </marker>
+          <marker id="arrowWarn" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="#B7791F" />
+          </marker>
+        </defs>
+
+        <!-- ============ closing loop: Servers -> back to ServiceNow (drawn first, sits behind nodes) ============ -->
+        <path d="M 930 585 L 930 625 L 175 625 L 175 205"
+              fill="none" stroke="#1F8A4C" stroke-width="2.5" stroke-dasharray="1 0" marker-end="url(#arrowGood)" />
+        <text x="552" y="618" text-anchor="middle" font-size="12.5" font-weight="600" fill="#1F8A4C" font-family="IBM Plex Sans">
+          next day: ServiceNow re-scans the server on its own
+        </text>
+        <text x="552" y="636" text-anchor="middle" font-size="12.5" font-weight="600" fill="#1F8A4C" font-family="IBM Plex Sans">
+          sees the new certificate → marks it "Confirmed" — independent proof, not a self-report
+        </text>
+
+        <!-- ============ ServiceNow node ============ -->
+        <rect x="60" y="70" width="230" height="88" rx="14" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.6"/>
+        <text x="175" y="103" text-anchor="middle" font-size="15" font-weight="700" fill="var(--ink)" font-family="IBM Plex Sans">ServiceNow</text>
+        <text x="175" y="124" text-anchor="middle" font-size="11.5" fill="var(--muted)" font-family="IBM Plex Sans">knows WHERE + WHEN</text>
+        <text x="175" y="141" text-anchor="middle" font-size="11.5" fill="var(--muted)" font-family="IBM Plex Sans">location, thumbprint, expiry date</text>
+
+        <!-- ============ Certificate source node ============ -->
+        <rect x="810" y="70" width="230" height="88" rx="14" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.6"/>
+        <text x="925" y="103" text-anchor="middle" font-size="15" font-weight="700" fill="var(--ink)" font-family="IBM Plex Sans">Certificate source</text>
+        <text x="925" y="124" text-anchor="middle" font-size="11.5" fill="var(--muted)" font-family="IBM Plex Sans">knows WHAT is ready</text>
+        <text x="925" y="141" text-anchor="middle" font-size="11.5" fill="var(--muted)" font-family="IBM Plex Sans">the new certificate, issued</text>
+
+        <!-- ============ arrows into Agent ============ -->
+        <path d="M 200 158 L 470 275" fill="none" stroke="currentColor" stroke-width="2" marker-end="url(#arrow)"/>
+        <text x="300" y="205" font-size="12" fill="var(--muted)" font-family="IBM Plex Sans" transform="rotate(28 300 205)">reads location + expiry</text>
+
+        <path d="M 900 158 L 632 275" fill="none" stroke="currentColor" stroke-width="2" marker-end="url(#arrow)"/>
+        <text x="760" y="205" text-anchor="end" font-size="12" fill="var(--muted)" font-family="IBM Plex Sans" transform="rotate(-28 760 205)">checks what's available</text>
+
+        <!-- ============ AI Agent hub ============ -->
+        <circle cx="550" cy="330" r="92" fill="var(--accent)" />
+        <circle cx="550" cy="330" r="92" fill="none" stroke="var(--ink)" stroke-opacity="0.08" stroke-width="1"/>
+        <text x="550" y="318" text-anchor="middle" font-size="13" font-weight="600" letter-spacing="0.10em" fill="#EAF1FC" font-family="IBM Plex Mono">AI AGENT</text>
+        <text x="550" y="341" text-anchor="middle" font-size="11.5" fill="#CFE0F7" font-family="IBM Plex Sans">matches by real identity</text>
+        <text x="550" y="358" text-anchor="middle" font-size="11.5" fill="#CFE0F7" font-family="IBM Plex Sans">— never by name alone —</text>
+        <text x="550" y="378" text-anchor="middle" font-size="11" font-style="italic" fill="#B9D1F2" font-family="IBM Plex Sans">and decides what happens next</text>
+
+        <!-- ============ Agent -> Servers (deploy path) ============ -->
+        <path d="M 636 355 L 812 465" fill="none" stroke="var(--accent)" stroke-width="2.5" marker-end="url(#arrow)"/>
+        <text x="690" y="420" font-size="12.5" font-weight="600" fill="var(--accent)" font-family="IBM Plex Sans" transform="rotate(31 690 420)">unique match + approved plan → deploy</text>
+
+        <!-- ============ Agent -> Person (escalate path) ============ -->
+        <path d="M 464 355 L 288 465" fill="none" stroke="var(--warn)" stroke-width="2.5" stroke-dasharray="6 5" marker-end="url(#arrowWarn)"/>
+        <text x="410" y="420" text-anchor="end" font-size="12.5" font-weight="600" fill="var(--warn)" font-family="IBM Plex Sans" transform="rotate(-31 410 420)">ambiguous, or no approved plan</text>
+
+        <!-- ============ Person notified node ============ -->
+        <rect x="60" y="470" width="230" height="110" rx="14" fill="var(--warn-soft)" stroke="var(--warn)" stroke-width="1.6"/>
+        <text x="175" y="503" text-anchor="middle" font-size="15" font-weight="700" fill="var(--ink)" font-family="IBM Plex Sans">A person is notified</text>
+        <text x="175" y="524" text-anchor="middle" font-size="11.5" fill="var(--muted)" font-family="IBM Plex Sans">the agent never guesses —</text>
+        <text x="175" y="541" text-anchor="middle" font-size="11.5" fill="var(--muted)" font-family="IBM Plex Sans">it hands over anything</text>
+        <text x="175" y="558" text-anchor="middle" font-size="11.5" fill="var(--muted)" font-family="IBM Plex Sans">it isn't certain about</text>
+
+        <!-- ============ Real server node ============ -->
+        <rect x="810" y="450" width="230" height="135" rx="14" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.8"/>
+        <text x="925" y="480" text-anchor="middle" font-size="15" font-weight="700" fill="var(--ink)" font-family="IBM Plex Sans">The real server</text>
+        <text x="925" y="500" text-anchor="middle" font-size="11" fill="var(--muted)" font-family="IBM Plex Mono">Windows · Linux · Java</text>
+        <line x1="835" y1="512" x2="1015" y2="512" stroke="var(--line)" stroke-width="1"/>
+        <text x="925" y="531" text-anchor="middle" font-size="11.5" fill="var(--ink)" font-family="IBM Plex Sans">install → activate → verify live</text>
+        <text x="925" y="551" text-anchor="middle" font-size="11" fill="var(--good)" font-family="IBM Plex Sans" font-weight="600">✓ matches → kept</text>
+        <text x="925" y="569" text-anchor="middle" font-size="11" fill="var(--warn)" font-family="IBM Plex Sans" font-weight="600">✗ mismatch → auto-undone</text>
+
+        <!-- small self-loop marking the automatic rollback, drawn right on the server box -->
+        <path d="M 1040 545 C 1075 545, 1075 575, 1042 575" fill="none" stroke="var(--warn)" stroke-width="1.8" stroke-dasharray="4 4" marker-end="url(#arrowWarn)"/>
+
+      </svg>
+    </div>
+    <figcaption>
+      <b>The one guarantee that never depends on the AI's judgment:</b> whatever the agent decides to deploy,
+      the system checks the live server afterward — and if it doesn't match, it undoes the change automatically,
+      every time. The agent chooses <i>what</i> to act on; it never gets to skip the safety check.
+    </figcaption>
+  </figure>
+
+  <div class="proof">
+    <span class="pill">Proven on Windows</span>
+    <span class="pill">Proven on Linux</span>
+    <span class="pill">Proven on Java</span>
+    <span class="pill">Confirmed independently by ServiceNow, not self-reported</span>
+  </div>
+</div>

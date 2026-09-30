@@ -10,7 +10,7 @@
     ],
     "valid_from": "2026-09-26T17:41:28+00:00",
     "valid_to": "2027-09-26T17:41:28+00:00",
-    "last_scanned": "2026-09-26T18:00:12+00:00",
+    "last_scanned": "2026-09-30T18:06:56+00:00",
     "state": "Confirmed by discovery",
     "deployed_new_thumbprint": "F8387B26BE8018F1270441633393B474BC9F0F9A1652AC66100B581D5FDF1390",
     "deployed_at": "2026-09-26T17:42:57+00:00",
@@ -27,24 +27,41 @@
     ],
     "valid_from": "2026-09-26T17:18:42+00:00",
     "valid_to": "2026-09-29T17:18:42+00:00",
-    "last_scanned": "2026-09-26T18:00:12+00:00",
+    "last_scanned": "2026-09-30T18:06:56+00:00",
     "state": "Discovered"
   },
   "ec2-lnx:linuxtest.lab.example.com": {
     "binding_id": "ec2-lnx:linuxtest.lab.example.com",
     "server": "ec2-lnx",
     "certificate_name": "linuxtest.lab.example.com",
-    "thumbprint": "154E7EB837D0C50FA61B2A5FA1411E2752A3232D3749419C28FE64FB24AB96C8",
-    "serial": "67E7B29EB3A88BBF7039AB8B43DE228085DFD613",
+    "thumbprint": "FB3465E1A6E101B4D9250250B86FA4A5931CE504ED00117619BD2D7EA94282B4",
+    "serial": "2C67FB4E26920C065BE31AE50A3E7A8ADD79",
     "san": [
-      "linuxtest.lab.example.com"
+      "16-16-120-70.nip.io"
     ],
-    "valid_from": "2026-09-26T17:50:45+00:00",
-    "valid_to": "2027-09-26T17:50:45+00:00",
-    "last_scanned": "2026-09-26T18:00:13+00:00",
+    "valid_from": "2026-09-30T17:07:59+00:00",
+    "valid_to": "2026-12-29T17:07:58+00:00",
+    "last_scanned": "2026-09-30T18:06:55+00:00",
     "state": "Confirmed by discovery",
     "deployed_new_thumbprint": "154E7EB837D0C50FA61B2A5FA1411E2752A3232D3749419C28FE64FB24AB96C8",
     "deployed_at": "2026-09-26T18:00:01+00:00",
     "confirmed_at": "2026-09-26T18:00:13+00:00"
+  },
+  "ec2-lnx:16-16-120-70.nip.io": {
+    "binding_id": "ec2-lnx:16-16-120-70.nip.io",
+    "server": "ec2-lnx",
+    "certificate_name": "16-16-120-70.nip.io",
+    "thumbprint": "FB3465E1A6E101B4D9250250B86FA4A5931CE504ED00117619BD2D7EA94282B4",
+    "serial": "2C67FB4E26920C065BE31AE50A3E7A8ADD79",
+    "san": [
+      "16-16-120-70.nip.io"
+    ],
+    "valid_from": "2026-09-30T17:07:59+00:00",
+    "valid_to": "2026-12-29T17:07:58+00:00",
+    "last_scanned": "2026-09-30T18:06:56+00:00",
+    "state": "Confirmed by discovery",
+    "deployed_new_thumbprint": "FB3465E1A6E101B4D9250250B86FA4A5931CE504ED00117619BD2D7EA94282B4",
+    "deployed_at": "2026-09-30T18:06:45+00:00",
+    "confirmed_at": "2026-09-30T18:06:56+00:00"
   }
 }

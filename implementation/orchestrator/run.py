@@ -27,7 +27,8 @@ from common.util import load_json, save_json, audit, utcnow, parse_ts, load_conf
 from discovery.discover import scan_all  # noqa: E402
 from matcher.match import match_all  # noqa: E402
 
-PROFILES_PATH = ROOT / "config" / "deployment_profiles.json"
+from common.sn_config import profiles_by_binding as _sn_profiles_by_binding  # noqa: E402
+
 JOBS_LOG = ROOT / "jobs" / "job_log.json"
 STATE_PATH = CMDB_DIR / "certificates.json"
 
@@ -41,8 +42,8 @@ ADAPTER_MODULES = {
 
 
 def profiles_by_binding():
-    profiles = load_json(PROFILES_PATH, {})
-    return {p["binding_id"]: {**p, "_profile_id": pid} for pid, p in profiles.items() if "binding_id" in p}
+    """Live from ServiceNow now -- see common/sn_config.py. No local deployment_profiles.json read."""
+    return _sn_profiles_by_binding()
 
 
 def cmd_sync():
@@ -86,6 +87,9 @@ def _fetch_bundle(cfg, sectigo_id):
     if sectigo_cfg.get("mode", "api") == "folder":
         from sources.folder_ca import get_bundle
         return get_bundle(sectigo_id, ROOT / sectigo_cfg.get("folder_path", "input_sectigo_certificates"))
+    if sectigo_cfg.get("mode") == "acme":
+        from sources.acme_ca import get_bundle
+        return get_bundle(sectigo_id, sectigo_cfg.get("acme_domains", []))
     base = sectigo_cfg["base_url"]
     with urllib.request.urlopen(f"{base}/api/ssl/v1/bundle/{sectigo_id}", timeout=10) as resp:
         return json.load(resp)

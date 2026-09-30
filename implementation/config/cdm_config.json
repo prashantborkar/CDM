@@ -11,12 +11,14 @@
     },
     "sectigo": {
       "_swap": "SWAP: change mode back to \"api\" and set base_url to the real Sectigo tenant, routing credentials through CyberArk (FR-SRC-012), once Sectigo access exists.",
-      "mode": "folder",
+      "_mode_note": "mode can be \"folder\" (input_sectigo_certificates/), \"api\" (CA simulator), or \"acme\" (real ACME issuance via sources/acme_ca.py -- see acme_domains below).",
+      "mode": "acme",
       "folder_path": "input_sectigo_certificates",
       "base_url": "http://127.0.0.1:8843",
       "poll_overlap_minutes": 120,
       "bundle_temp_ttl_minutes": 15,
-      "expected_downloads": 1
+      "expected_downloads": 1,
+      "acme_domains": ["16-16-120-70.nip.io"]
     }
   },
 

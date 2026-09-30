@@ -1,13 +1,13 @@
 {
-  "ec2-lnx:linuxtest.lab.example.com": {
-    "binding_id": "ec2-lnx:linuxtest.lab.example.com",
-    "sectigo_id": "linuxtest_renewal",
-    "old_thumbprint": "72D618A38205CB40DE3E05B96DEA6B2E9BC316229EA681540005305AAB006F12",
-    "new_thumbprint": "154E7EB837D0C50FA61B2A5FA1411E2752A3232D3749419C28FE64FB24AB96C8",
+  "ec2-lnx:16-16-120-70.nip.io": {
+    "binding_id": "ec2-lnx:16-16-120-70.nip.io",
+    "sectigo_id": "16-16-120-70.nip.io",
+    "old_thumbprint": "9496753CF1DDA85CA4194A25F55FFDB4777BBBAF23FA58A88621DA6B93D54516",
+    "new_thumbprint": "FB3465E1A6E101B4D9250250B86FA4A5931CE504ED00117619BD2D7EA94282B4",
     "san": [
-      "linuxtest.lab.example.com"
+      "16-16-120-70.nip.io"
     ],
     "rule": "M2",
-    "matched_at": "2026-09-26T17:59:40+00:00"
+    "matched_at": "2026-09-30T18:06:22+00:00"
   }
 }
